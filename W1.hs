@@ -80,7 +80,9 @@ sumTo n = sum [1..n]
 power :: Integer -> Integer -> Integer
 power 0 _ = 0
 power _ 0 = 1
-power n k = n * power n k-1
+power n 1 = n
+power 1 _ = 1
+power n k = n * (power n (k-1))
 
 -- Ex 10: ilog2 n should be the number of times you can halve the
 -- integer n (rounding down) before you get 1.
@@ -90,7 +92,7 @@ power n k = n * power n k-1
 
 ilog2 :: Integer -> Integer
 ilog2 1 = 0
-ilog2 n = 1 + ilog2 n `div` 2
+ilog2 n = 1 + (ilog2 $ n `div` 2)
 
 -- Ex 11: compute binomial coefficients using recursion. Binomial
 -- coefficients are defined by the following equations:
@@ -125,7 +127,7 @@ tribonacci = undefined
 
 myGcd :: Integer -> Integer -> Integer
 myGcd a 0 = a
-myGcd a b = myGcd b a `mod` b
+myGcd a b = myGcd b (a `mod` b)
 
 -- Ex 14: The Haskell Prelude (standard library) defines the type
 -- Ordering with values LT, GT and EQ. You try out Ordering by
@@ -177,11 +179,11 @@ funnyMin a b = case funnyCompare a b of
 -- * you'll need a (recursive) helper function
 
 pyramid' :: String -> Integer -> Integer -> String -> String
-pyramid' res 0 f "down" = res ++ "0"
-pyramid' res c f "down" = pyramid' (res ++ show c) (c-1) f "down"
+pyramid' res 0 f "down" = res ++ ['0']
+pyramid' res c f "down" = pyramid' (res ++ [show c]) (c-1) f "down"
 pyramid' res c f "up"
-  | c == f = pyramid' (res ++ show c) (c-1) f "down"
-  | otherwise = pyramid' (res ++ show c) (c+1) f "up"
+  | c == f = pyramid' (res ++ [show c]) (c-1) f "down"
+  | otherwise = pyramid' (res ++ [show c]) (c+1) f "up"
 
 pyramid :: Integer -> String
 pyramid f = pyramid' "" 0 f "up" 
