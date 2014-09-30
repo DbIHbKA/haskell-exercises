@@ -9,6 +9,7 @@ module W1 where
 -- Ex 1: define variables one, two and three. They should all have
 -- type Int and values 1, 2 and 3. This exercise has no tests.
 
+
 -- Ex 2: define the function double of type Integer->Integer. Double
 -- should take one argument and return it multiplied by two.
 
@@ -20,14 +21,14 @@ double x = 2 * x
 -- four.
 
 quadruple :: Integer -> Integer
-quadruple x = 4 * double x
+quadruple x = 2 * double x
 
 -- Ex 4: define the function poly2. It should take four arguments of
 -- type Double, a, b, c, and x and return a^2*x+b*x+c. Give poly2 a
 -- type signature, i.e. poly2 :: something.
 
 poly2 :: Double -> Double -> Double -> Double -> Double
-poly2 a b c x = a * a * x + b * x + c
+poly2 a b c x = a * x * x + b * x + c
 
 -- Ex 5: define the function eeny that returns "eeny" for even inputs
 -- and "meeny" for odd inputs.
@@ -120,7 +121,11 @@ binomial n k = binomial (n-1) k + binomial (n-1) (k-1)
 -- computes T(n). You'll probably want to define a helper function.
 
 tribonacci :: Integer -> Integer
-tribonacci = undefined
+tribonacci 1 = 1
+tribonacci 2 = 1
+tribonacci 3 = 2
+tribonacci n = (tribonacci (n-1)) + (tribonacci (n-2)) + (tribonacci (n-3))
+
 
 -- Ex 13: implement the euclidean algorithm for finding the greatest
 -- common divisor: http://en.wikipedia.org/wiki/Euclidean_algorithm
@@ -178,15 +183,8 @@ funnyMin a b = case funnyCompare a b of
 -- * the function show transforms a number into a string
 -- * you'll need a (recursive) helper function
 
-pyramid' :: String -> Integer -> Integer -> String -> String
-pyramid' res 0 f "down" = res ++ ['0']
-pyramid' res c f "down" = pyramid' (res ++ [show c]) (c-1) f "down"
-pyramid' res c f "up"
-  | c == f = pyramid' (res ++ [show c]) (c-1) f "down"
-  | otherwise = pyramid' (res ++ [show c]) (c+1) f "up"
-
 pyramid :: Integer -> String
-pyramid f = pyramid' "" 0 f "up" 
+pyramid f = reverse . tail . reverse $ foldl (\res item -> res ++ show item ++ ",") [] ([0..f] ++ reverse [0..(f-1)]) 
 
 -- Ex 17: implement the function smallestDivisor that returns the
 -- smallest number (greater than 1) that divides the given number.
@@ -202,14 +200,15 @@ pyramid f = pyramid' "" 0 f "up"
 
 smallestDivisor' :: Integer -> Integer -> Integer
 smallestDivisor' m n
+  | m*m > n = n
   | m * (n `div` m) == n = m
-  | otherwise = smallestDivisor' (m-1) n
+  | otherwise = smallestDivisor' (m+1) n
 
 smallestDivisor :: Integer -> Integer
 smallestDivisor n
   | n == 0 = 0
   | n == 1 = 1
-  | otherwise = smallestDivisor' (floor $ sqrt $ fromIntegral n) n
+  | otherwise = smallestDivisor' 2 n
 
 -- Ex 18: implement a function isPrime that checks if the given number
 -- is a prime number. Use the function smallestDivisor.
@@ -219,7 +218,7 @@ smallestDivisor n
 isPrime :: Integer -> Bool
 isPrime 0 = False
 isPrime 1 = False
-isPrime n = if smallestDivisor n == 1
+isPrime n = if smallestDivisor n == n
                then True
                else False
 
@@ -229,5 +228,5 @@ isPrime n = if smallestDivisor n == 1
 
 nextPrime :: Integer -> Integer
 nextPrime n
-  | isPrime n = n
-  | otherwise = nextPrime (n+1)
+  | isPrime (n + 1) = n + 1
+  | otherwise = nextPrime (n + 1)
