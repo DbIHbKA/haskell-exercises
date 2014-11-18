@@ -28,10 +28,10 @@ import Data.List
 -- True *! 3 ==> [True,True,True]
 
 (%$) :: String -> String -> String
-x %$ y = undefined
+x %$ y = x ++ y ++ x
 
 (*!) :: Int -> a -> [a]
-n *! val = undefined
+n *! val = replicate n val
 
 -- Ex 2: implement the function allEqual which returns True if all
 -- values in the list are equal.
@@ -46,7 +46,8 @@ n *! val = undefined
 -- you remove the Eq a => constraint from the type!
 
 allEqual :: Eq a => [a] -> Bool
-allEqual xs = undefined
+allEqual [] = True
+allEqual (x:xs) = all (== x) xs
 
 -- Ex 3: implement the function secondSmallest that returns the second
 -- smallest value in the list, or Nothing if there is no such value.
@@ -58,7 +59,9 @@ allEqual xs = undefined
 -- secondSmallest [5,3,7,2,3,1]  ==>  Just 2
 
 secondSmallest :: Ord a => [a] -> Maybe a
-secondSmallest xs = undefined
+secondSmallest xs = case length xs < 2 of
+  True -> Nothing
+  False -> Just $ sort xs !! 1
 
 -- Ex 4: find how two lists differ from each other. If they have
 -- different lengths, return
@@ -78,7 +81,16 @@ secondSmallest xs = undefined
 --  findDifference [0,0,0] [0,0,0,0]
 --    ==> Just "3 /= 4"
 
-findDifference = undefined
+findDifference :: (Eq a, Show a) => [a] -> [a] -> Maybe String
+findDifference xs ys = if lxs == lys
+                          then case dropWhile (\(x, y) -> x == y ) $ zip xs ys of
+                                [] -> Nothing
+                                ((x, y):_) -> Just $ show x ++ " /= " ++ show y
+                          else Just $ show lxs ++ " /= " ++ show lys
+  where
+    lxs = length xs
+    lys = length ys
+    
 
 -- Ex 5: compute the average of a list of values of the Fractional
 -- class.
@@ -90,7 +102,7 @@ findDifference = undefined
 -- length to a Fractional
 
 average :: Fractional a => [a] -> a
-average xs = undefined
+average xs = sum xs / fromIntegral (length xs)
 
 -- Ex 6: define an Eq instance for the type Foo below.
 
@@ -98,15 +110,29 @@ data Foo = Bar | Quux | Xyzzy
   deriving Show
 
 instance Eq Foo where
-  (==) = error "implement me"
+  (==) Bar Bar = True
+  (==) Quux Quux = True
+  (==) Xyzzy Xyzzy = True
+  (==) _ _ = False
 
 -- Ex 7: implement an Ord instance for Foo so that Quux < Bar < Xyzzy
 
 instance Ord Foo where
-  compare = error "implement me?"
-  (<=) = error "and me?"
-  min = error "and me?"
-  max = error "and me?"
+  compare Quux Quux = EQ
+  compare Quux _ = LT
+  compare _ Quux = GT
+  compare Bar Bar = EQ
+  compare Bar Xyzzy = LT
+  compare Xyzzy Xyzzy = EQ
+  compare Xyzzy _ = GT
+  
+  (<=) a b = (compare a b == EQ) || (a < b)
+  min a b = if a <= b
+               then a
+               else b
+  max a b = if a <= b
+               then b
+               else a
 
 -- Ex 8: here is a type for a 3d vector. Implement an Eq instance for it.
 
@@ -114,7 +140,7 @@ data Vector = Vector Integer Integer Integer
   deriving Show
 
 instance Eq Vector where
-  (==) = error "implement me"
+  (==) (Vector x1 y1 z1) (Vector x2 y2 z2) = x1 == x2 && y1 == y2 && z1 == z2
 
 -- Ex 9: implementa Num instance for Vector such that all the
 -- arithmetic operations work componentwise.
@@ -129,7 +155,13 @@ instance Eq Vector where
 -- signum (Vector (-1) 2 (-3)) ==> Vector (-1) 1 (-1)
 
 instance Num Vector where
-
+  (+) (Vector x y z) (Vector a b c) = Vector (x+a) (y+b) (z+c)
+  (*) (Vector x y z) (Vector a b c) = Vector (x*a) (y*b) (z*c)
+  negate (Vector x y z) = Vector (negate x) (negate y) (negate z)
+  abs (Vector x y z) = Vector (abs x) (abs y) (abs z)
+  signum (Vector x y z) = Vector (signum x) (signum y) (signum z)
+  fromInteger x = Vector x x x
+  
 -- Ex 10: compute how many times each value in the list occurs. Return
 -- the frequencies as a list of (frequency,value) pairs.
 --
@@ -139,8 +171,8 @@ instance Num Vector where
 -- freqs [False,False,False,True]
 --   ==> [(3,False),(1,True)]
 
-freqs :: Eq a => [a] -> [(Int,a)]
-freqs xs = undefined
+freqs :: (Eq a, Ord a) => [a] -> [(Int,a)]
+freqs xs = map (\l -> (length l, head l)) $ group $ sort xs
 
 -- Ex 11: implement an Eq instance for the following binary tree type
 
@@ -148,8 +180,10 @@ data ITree = ILeaf | INode Int ITree ITree
   deriving Show
 
 instance Eq ITree where
-  (==) = error "implement me"
-
+  (==) ILeaf ILeaf = True
+  (==) (INode a la ra) (INode b lb rb) = (a == b) && la == lb && ra == rb
+  (==) _ _ = False
+  
 -- Ex 12: here is a list type parameterized over the type it contains.
 -- Implement an instance "Eq a => Eq (List a)" that compares elements
 -- of the lists.
@@ -158,7 +192,9 @@ data List a = Empty | LNode a (List a)
   deriving Show
 
 instance Eq a => Eq (List a) where
-  (==) = error "implement me"
+  (==) Empty Empty = True
+  (==) (LNode a ta) (LNode b tb) = a == b && ta == tb
+  (==) _ _ = False
 
 -- Ex 13: start by reading a bit about Functors. A Functor is a thing
 -- you can "map" over, e.g. lists, Maybes.
@@ -171,7 +207,7 @@ instance Eq a => Eq (List a) where
 --   incrementAll (Just 3.0)  ==>  Just 4.0
 
 incrementAll :: (Functor f, Num n) => f n -> f n
-incrementAll x = undefined
+incrementAll x = fmap (+1) x
 
 -- Ex 14: below you'll find a type Result that works a bit like Maybe,
 -- but there are two different types of "Nothings": one with and one
@@ -183,12 +219,16 @@ data Result a = MkResult a | NoResult | Failure String
   deriving (Show,Eq)
 
 instance Functor Result where
-  fmap f result = error "implement me"
+  fmap f (MkResult a) = MkResult $ f a
+  fmap _f NoResult = NoResult
+  fmap _f (Failure s) = Failure s
 
 -- Ex 15: Implement the instance Functor List (for the datatype List
 -- from ex 11)
 
 instance Functor List where
+  fmap _f Empty = Empty
+  fmap f (LNode v tl) = LNode (f v) $ fmap f tl
 
 -- Ex 16: Fun a is a type that wraps a function Int -> a. Implement a
 -- Functor instance for it.
@@ -202,6 +242,7 @@ runFun :: Fun a -> Int -> a
 runFun (Fun f) x = f x
 
 instance Functor Fun where
+  fmap f (Fun g) = Fun (f.g)
 
 -- Ex 17: this and the next exercise serve as an introduction for the
 -- next week.
