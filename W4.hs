@@ -57,7 +57,13 @@ readWords n = do
 -- returned.)
 
 readUntil :: (String -> Bool) -> IO [String]
-readUntil f = undefined
+readUntil f = loopWhile f []
+  where
+    loopWhile f acc = do
+      s <- getLine
+      if f s
+        then loopWhile f (acc ++ [s])
+        else return acc
 
 -- Ex 6: given n, print the n first fibonacci numbers, one per line
 
@@ -71,14 +77,21 @@ printFibs n = mapM_ print $ take n fibGen
 -- number should be printed.
 
 isums :: Int -> IO Int
-isums n = 
+isums n = do
+  nums <- replicateM n $ do
+    s <- getLine
+    let n = read s :: Int
+    return n
+  return $ sum nums
 
 -- Ex 8: when is a useful function, but its first argument has type
 -- Bool. Write a function that behaves similarly but the first
 -- argument has type IO Bool.
 
 whenM :: IO Bool -> IO () -> IO ()
-whenM cond op = undefined
+whenM cond op = do
+  cond' <- cond
+  when cond' op
 
 -- Ex 9: implement the while loop. while condition operation should
 -- run operation as long as condition returns True.
@@ -95,7 +108,7 @@ whenM cond op = undefined
 -- This prints YAY! as long as the user keeps answering Y
 
 while :: IO Bool -> IO () -> IO ()
-while cond op = undefined
+while cond op = whenM cond $ op >> while cond op
 
 -- Ex 10: given a string and an IO operation, print the string, run
 -- the IO operation, print the string again, and finally return what
@@ -114,7 +127,11 @@ while cond op = undefined
 --     4. returns the line read from the user
 
 debug :: String -> IO a -> IO a
-debug s op = undefined
+debug s op = do
+  putStrLn s
+  res <- op
+  putStrLn s
+  return res
 
 -- Ex 11: Reimplement mapM_ (specialized to the IO type) using
 -- recursion and pattern matching.
