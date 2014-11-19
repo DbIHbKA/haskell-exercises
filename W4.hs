@@ -23,13 +23,15 @@ import System.IO
 -- first line should be HELLO and the second one WORLD
 
 hello :: IO ()
-hello = undefined
+hello = do
+  putStrLn "HELLO"
+  putStrLn "WORLD"
 
 -- Ex 2: define the IO operation greet that takes a name as an
 -- argument and prints a line "HELLO name".
 
 greet :: String -> IO ()
-greet name = undefined
+greet name = putStrLn $ "HELLO " ++ name
 
 
 -- Ex 3: define the IO operation greet2 that reads a name from the
@@ -39,13 +41,15 @@ greet name = undefined
 -- Try to use the greet operation in your solution.
 
 greet2 :: IO ()
-greet2 = undefined
+greet2 = getLine >>= greet
 
 -- Ex 4: define the IO operation readWords n which reads n lines from
 -- the user and returns them in alphabetical order.
 
 readWords :: Int -> IO [String]
-readWords n = undefined
+readWords n = do
+  s <- replicateM n getLine
+  return $ sort s
 
 -- Ex 5: define the IO operation readUntil f, which reads lines from
 -- the user and returns them as a list. Reading is stopped when f
@@ -58,14 +62,16 @@ readUntil f = undefined
 -- Ex 6: given n, print the n first fibonacci numbers, one per line
 
 printFibs :: Int -> IO ()
-printFibs n = undefined
+printFibs n = mapM_ print $ take n fibGen
+  where
+    fibGen = 1 : scanl (+) 1 fibGen
 
 -- Ex 7: isums n should read n numbers from the user and return their
 -- sum. Additionally, after each read number, the sum up to that
 -- number should be printed.
 
 isums :: Int -> IO Int
-isums n = undefined
+isums n = 
 
 -- Ex 8: when is a useful function, but its first argument has type
 -- Bool. Write a function that behaves similarly but the first
