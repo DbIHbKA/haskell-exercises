@@ -57,13 +57,11 @@ readWords n = do
 -- returned.)
 
 readUntil :: (String -> Bool) -> IO [String]
-readUntil f = loopWhile f []
+readUntil f = go f []
   where
-    loopWhile f acc = do
-      s <- getLine
-      if f s
-        then loopWhile f (acc ++ [s])
-        else return acc
+    go f acc = getLine >>= \s -> if f s
+                                    then go f (acc ++ [s])
+                                    else return acc
 
 -- Ex 6: given n, print the n first fibonacci numbers, one per line
 
@@ -141,13 +139,17 @@ debug s op = do
 -- value in the list.
 
 mymapM_ :: (a -> IO b) -> [a] -> IO ()
-mymapM_ = undefined
+mymapM_ _ [] = return ()
+mymapM_ f (x:xs) = f x >> mymapM_ f xs
 
 -- Ex 12: Reimplement the function forM using pattern matching and
 -- recursion.
 
 myforM :: [a] -> (a -> IO b) -> IO [b]
-myforM as f = undefined
+myforM as f = go as f []
+  where
+    go [] _ acc = return acc
+    go (x:xs) f acc = f x >>= \i -> go xs f (acc ++ [i])
 
 -- Ex 13: sometimes one bumps into IO operations that return IO
 -- operations. For instance the type IO (IO Int) means an IO operation
@@ -172,7 +174,7 @@ myforM as f = undefined
 --        replicateM l getLine
 
 tuplaKutsu :: IO (IO a) -> IO a
-tuplaKutsu op = undefined
+tuplaKutsu = join
 
 -- Ex 14: implement the analogue of function composition (the (.)
 -- operator) for IO operations. That is, take an operation op1 of type
@@ -190,8 +192,10 @@ tuplaKutsu op = undefined
 --   3. return the result (of type b)
 
 compose :: (a -> IO b) -> (c -> IO a) -> c -> IO b
-compose op1 op2 c = undefined
-
+compose op1 op2 c = do
+  a <- op2 c
+  op1 a
+  
 -- Ex 15: take a look at the documentaiton for Data.IORef
 -- <http://www.haskell.org/ghc/docs/latest/html/libraries/base/Data-IORef.html>
 --
@@ -215,8 +219,13 @@ compose op1 op2 c = undefined
 --  4
 
 mkCounter :: IO (IO (), IO Int)
-mkCounter = undefined
+mkCounter = do
+  globVal <- newIORef 0
+  let inc = modifyIORef globVal (+1)
+      get = readIORef globVal
+  return (inc, get)
 
+  
 -- Ex 16: fetch from the given file (Handle) the lines with the given
 -- indices. Line indexing starts from 1. You can assume that the
 -- numbers are given in ascending order.
