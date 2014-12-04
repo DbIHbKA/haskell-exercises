@@ -69,19 +69,36 @@ readNames s =
 -- (NB! There are obviously other corner cases like the inputs " " and
 -- "a b c", but you don't need to worry about those here)
 split :: String -> Maybe (String,String)
-split s = undefined
+split s =
+  if s == for
+     then Nothing
+     else Just (for, sur)
+  where
+    for = takeWhile (/= ' ') s
+    sur = tail $ dropWhile (/= ' ') s
+  
 
 -- checkNumber should take a pair of two strings and return then
 -- unchanged if they don't contain numbers. Otherwise Nothing is
 -- returned.
 checkNumber :: (String, String) -> Maybe (String, String)
-checkNumber (for,sur) = undefined
+checkNumber (for,sur) =
+  if chkNotNum for && chkNotNum sur
+     then Just (for, sur)
+     else Nothing
+  where
+    chkNotNum s = all (== True) $ map (not . isDigit) s
 
 -- checkCapitals should take a pair of two strings and return them
 -- unchanged if both start with a capital letter. Otherwise Nothing is
 -- returned.
 checkCapitals :: (String, String) -> Maybe (String, String)
-checkCapitals (for,sur) = undefined
+checkCapitals (for,sur) =
+  if chkCap for && chkCap sur
+     then Just (for, sur)
+     else Nothing
+  where
+    chkCap = isUpper . head
 
 -- Ex 2: implement a function myTake that works just like take, but
 --   1. the arguments are of types Maybe Int and Maybe [a]
@@ -103,7 +120,12 @@ checkCapitals (for,sur) = undefined
 --    ==> Nothing
 
 myTake :: Maybe Int -> Maybe [a] -> Maybe [a]
-myTake mi ml = undefined
+myTake mi ml = do
+  i <- mi
+  l <- ml
+  if length l >= i
+     then Just $ take i l
+     else Nothing
 
 -- Ex 3: given a list of indices and a list of values, return the sum
 -- of the values in the given indices. You should fail if any of the
